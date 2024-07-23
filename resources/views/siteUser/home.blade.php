@@ -6,24 +6,62 @@
         <section class="filter p-4">
             <form class="row" action="" method="GET">
                 <div class="col-12 col-md-3">
-                    {{-- <input type="hidden" name="current_page" value=""> --}}
-                    <select class="form-element pr-2" name='car_id'>
+                    <select class="form-element pr-2" name='car_id' id="car_id">
                         <option value="">Car</option>
                         @foreach ($cars as $car)
-                            <option value="{{ $car->id }}" {{request()->car_id== $car->id  ? 'selected' : ''}}>{{ $car->name }}</option>
+                            <option value="{{ $car->id }}" {{ request()->car_id == $car->id ? 'selected' : '' }}>
+                                {{ $car->name }}</option>
                         @endforeach
                     </select>
-                    
                 </div>
                 <div class="col-12 col-md-3">
-                  <select class="form-element pr-2" name='fuel_id'>
-                    <option value="">Fuel</option>
-                    @foreach ($fuels as $fuel)
-                        <option value="{{ $fuel->id }}" {{request()->fuel_id ==$fuel->id ? 'selected' : ''}} >{{ $fuel->name }}</option>
-                    @endforeach
-                </select>
-                </div>
+                    <select class="form-element pr-2" name='model_id' id="model_id">
+                        <option value="">Select model</option>
+                        @foreach ($models as $model)
+                            <option value="{{ $model->id }}" {{ request()->model_id == $model->id ? 'selected' : '' }}>
+                                {{ $model->name }}</option>
+                        @endforeach
+                    </select>
 
+                </div>
+                <div class="col-12 col-md-3">
+                    <select class="form-element pr-2" name='city_id' id="city_id">
+                        <option value="">Select city</option>
+                        @foreach ($cities as $city)
+                            <option value="{{ $city->id }}" {{ request()->city_id == $city->id ? 'selected' : '' }}>
+                                {{ $city->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-12 col-md-3">
+                    <select class="form-element pr-2" name='fuel_id'>
+                        <option value="">Fuel</option>
+                        @foreach ($fuels as $fuel)
+                            <option value="{{ $fuel->id }}" {{ request()->fuel_id == $fuel->id ? 'selected' : '' }}>
+                                {{ $fuel->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-12 col-md-3">
+                    <div class="filterFlexDes">
+                        <div class="filterFlexDes50">
+                            <input
+                                type="number"
+                                class="form-element"
+                                name="price_min"
+                                placeholder="Qiymet, min."
+                            />
+                        </div>
+                        <div class="filterFlexDes50">
+                            <input
+                                type="number"
+                                class="form-element"
+                                name="price_max"
+                                placeholder="maks"
+                            />
+                        </div>
+                    </div>
+                </div>
                 <div class="col-12 d-flex justify-content-end">
                     <button class="btn btn-danger">Axtar</button>
                 </div>
@@ -67,4 +105,40 @@
             </div>
         </section>
     </main>
+
+
+    <script>
+        var modelId = document.getElementById("model_id");
+
+        if($('#car_id').val() == ''){
+            modelId.disabled = true;
+        }
+        
+
+        $(document).on('change', '#car_id', async function(e) {
+            modelId.disabled = false;
+
+            var id = e.target.value;
+            var link = 'http://localhost:8000/api/car-model/' + id;
+
+            var data = '';
+            // console.log('dat1 :' + data);
+            async function getData(file) {
+                let x = await fetch(file).then((res) => res.json());
+                return x;
+            }
+
+
+            data = await getData(link);
+
+            // console.log('dat2 :' + data);
+
+            $("#model_id option").remove();
+            $("#model_id").append("<option value=''>Select model</option>")
+            data.map((item) => {
+                $("#model_id").append("<option value=" + item['id'] + ">" + item['name'] + "</option>")
+            })
+
+        });
+    </script>
 @endsection

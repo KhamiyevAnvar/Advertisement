@@ -1,6 +1,6 @@
 <section class="headerNav">
     <div class="headerLeft">
-      <a href="index.html" class="turboLogo"> Turbo.az </a>
+      <a href="{{route('homeIndex')}}" class="turboLogo"> Turbo.az </a>
     </div>
     <div class="headerRight">
       <a href="{{route('createAdvertisement')}}" class="addNewAnnouncementBut">

@@ -29,7 +29,7 @@
                         <hr>
                         <div>
                             <span> Yeniləndi: {{ $advertisement->updated_at }}</span>
-                            <span cla>Baxışların sayı: 1435</span>
+                            <span >Baxışların sayı: {{$advertisement->view}}</span>
                         </div>
                         <hr />
 

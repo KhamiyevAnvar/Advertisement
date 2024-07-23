@@ -97,9 +97,9 @@
                     </div>
                     {{-- @dd($currencies) --}}
                     <div class="col-12 col-md-6 mt-4 pt-3">
-                       
+
                         <div class="row ">
-                            
+
                             <div class="col-md-6">
                                 <label for="">Qiymet </label>
                                 <div class="form-group">
@@ -175,7 +175,8 @@
                 <div class="row">
                     <div class="col-12">
                         <div class="form-floating">
-                            <textarea class="form-control" placeholder="Leave a comment here" name="body" id="floatingTextarea2" style="height: 100px"></textarea>
+                            <textarea class="form-control" placeholder="Leave a comment here" name="body" id="floatingTextarea2"
+                                style="height: 100px"></textarea>
                             <label for="floatingTextarea2">Qeyd</label>
                         </div>
                     </div>
@@ -211,6 +212,8 @@
 
 
     <script>
+        
+
         $(document).on('change', '#car_id', async function(e) {
 
             var id = e.target.value;
@@ -223,7 +226,6 @@
                 let x = await fetch(file).then((res) => res.json());
                 return x;
             }
-
 
 
             data = await getData(link);

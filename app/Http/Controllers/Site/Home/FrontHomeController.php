@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Site\Home;
 
 use App\Http\Controllers\Controller;
 use App\Models\Advertisement;
+use App\Models\AdvertisementView;
 use App\Models\Car;
+use App\Models\CarModel;
+use App\Models\City;
 use App\Models\FuelType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -24,11 +27,25 @@ class FrontHomeController extends Controller
                 ->get();
         });
 
+        $models = CarModel::query()
+            ->select('id', 'name')
+            ->where('id', request()->model_id)
+            ->whereNull('deleted_at')
+            ->get();
+
+        $cities = Cache::remember('city_select', 3600, function () {
+            return City::query()
+                ->select('id', 'name')
+                ->get();
+        });
+
         $fuels = Cache::remember('fuel_select', 3600, function () {
             return FuelType::query()
                 ->select('id', 'name')
                 ->get();
         });
+
+
 
         $advertisements = Advertisement::query()
             ->from('advertisements as a')
@@ -57,8 +74,23 @@ class FrontHomeController extends Controller
             $advertisements = $advertisements->where('a.car_id', $request->car_id);
         }
 
+        if ($request->model_id != null) {
+            $advertisements = $advertisements->where('a.model_id', $request->model_id);
+        }
+
+        if ($request->city_id != null) {
+            $advertisements = $advertisements->where('ai.city_id', $request->city_id);
+        }
+
         if ($request->fuel_id != null) {
             $advertisements = $advertisements->where('ai.fuel_type_id', $request->fuel_id);
+        }
+
+
+        if ($request->price_max != null) {
+            $advertisements = $advertisements
+                ->where('a.price', '>', $request->price_min ?? 0)
+                ->where('a.price', '<', $request->price_max ?? 7777777);
         }
 
 
@@ -67,12 +99,11 @@ class FrontHomeController extends Controller
             ->paginate(3)
             ->appends($request->all());
 
-
         // return  $advertisements;
-        return view("siteUser.home", compact('advertisements', 'cars', 'fuels'));
+        return view("siteUser.home", compact('advertisements', 'cars', 'fuels', 'models', 'cities'));
     }
 
-    public static function show($id)
+    public static function show(Request $request, $id)
     {
 
         $advertisement = Advertisement::query()
@@ -94,7 +125,8 @@ class FrontHomeController extends Controller
                 'cs.name as city',
                 'b.name as banName',
                 'ft.name as fuelName',
-                'g.name as gearName'
+                'g.name as gearName',
+                'a.view'
 
             )->join('site_users as su', 'su.id', 'a.created_by')
             ->join('cars as c', 'c.id', 'a.car_id')
@@ -110,6 +142,28 @@ class FrontHomeController extends Controller
             ->where(DB::raw("ADDDate(a.updated_at,30)"), '>', Carbon::now()->format('Y-m-d'))
             ->with('photos', 'suppliers')
             ->firstOrFail();
+
+        $checkView = AdvertisementView::query()
+            ->where('advertisement_id', $id)
+            ->where('ip', $request->ip())
+            ->where('user_agent', $request->userAgent())
+            ->exists();
+
+        if (!$checkView) {
+            AdvertisementView::query()
+                ->create([
+                    "advertisement_id" => $id,
+                    "ip" => $request->ip(),
+                    "user_agent" => $request->userAgent(),
+
+                ]);
+        }
+
+        $advertisement->view =  AdvertisementView::query()
+            ->select(DB::raw('COUNT(id) as view'))
+            ->where("advertisement_id", $id)
+            ->first()->view ?? 0;
+
         // return $advertisement;
 
         return view('siteUser.advertisement.detail', compact('advertisement'));
